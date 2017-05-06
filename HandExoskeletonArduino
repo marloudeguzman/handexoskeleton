@@ -1,0 +1,77 @@
+#include <Servo.h>
+
+Servo indexfinger;
+Servo middlefinger;
+Servo doublefinger;
+
+int var = 0; //variable used to determine initial position
+
+void setup()
+{
+   pinMode(A0, INPUT);  //technically not needed unless previously used as output
+   indexfinger.attach(8);   // start servo PWM on pin 8
+   middlefinger.attach(9);   // start servo PWM on pin 9
+   doublefinger.attach(10);   // start servo PWM on pin 10
+  // begin sending over serial port (if using)
+  Serial.begin(9600);
+}
+
+void loop()
+{
+   int value = analogRead(A0);
+   //10 bit adc on range 0..5v into int values 0..1023 yields 0.004883v per bin
+   float volts = value*0.004883;
+ //  float percent = (value/1023.0)*100.0; 
+   Serial.print("Value: ");
+   Serial.print(value);
+   Serial.print(",Volts: ");
+   Serial.print(volts);
+   //Serial.print(",Percent: ");
+   //Serial.print(percent);
+   Serial.print(",Var: ");
+   Serial.println(var);
+   //delay(100);
+
+   if (value < 600)
+   {
+    
+    if (var > 0)
+    {
+      indexfinger.write(110);   // extension: servo rotating clockwise
+      middlefinger.write(110);   // extension: servo rotating clockwise
+      doublefinger.write(110);   // extension: servo rotating clockwise
+      var = var - 1;  //variable decreases during release
+    }
+    else
+    {
+      indexfinger.write(92.1);   // servo not moving
+      middlefinger.write(92);   // servo not moving
+      doublefinger.write(92);   // servo not moving
+    }
+    delay(100);
+   }
+   else
+   {
+    indexfinger.write(70);   // contraction: servo rotating counterclockwise
+    middlefinger.write(70);   // contraction: servo rotating counterclockwise
+    doublefinger.write(70);   // contraction: servo rotating counterclockwise
+    if (var < 20)  //prevents overgripping
+    {
+      var = var + 1; //variable increases during contraction
+    }
+   if (var == 20) //prevents overgripping
+    {
+      indexfinger.write(92.1);  // servo not moving
+      middlefinger.write(92);   // servo not moving
+      doublefinger.write(92);   // servo not moving  
+    }
+    delay(100);
+    
+   }
+
+   //delay(200);
+}
+
+
+//S1.read();  //returns angle move to so far since last write
+//S1.detach(); // stops servo on this pin
